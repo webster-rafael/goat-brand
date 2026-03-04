@@ -35,3 +35,18 @@ func (r *userPostgres) FindAll() ([]domain.User, error) {
 	}
 	return users, nil
 }
+
+func (r *userPostgres) FindByEmail(email string) (*domain.User, error) {
+	query := `SELECT id, name, email, phone, code, payment_status, created_at FROM users WHERE email = $1 LIMIT 1`
+	var u domain.User
+	err := r.db.QueryRowContext(context.Background(), query, email).Scan(
+		&u.ID, &u.Name, &u.Email, &u.Phone, &u.Code, &u.PaymentStatus, &u.CreatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Return nil, nil when no rows are found
+		}
+		return nil, err
+	}
+	return &u, nil
+}

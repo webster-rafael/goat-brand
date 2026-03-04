@@ -14,4 +14,5 @@ type User struct {
 
 type UserRepository interface {
 	FindAll() ([]User, error)
+	FindByEmail(email string) (*User, error)
 }

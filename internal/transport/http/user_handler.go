@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"goatbrand-backend/internal/domain"
 	"goatbrand-backend/internal/usecase"
 )
 
@@ -16,15 +15,24 @@ func NewUserHandler(u *usecase.UserUsecase) *UserHandler {
 	return &UserHandler{usecase: u}
 }
 
-func (h *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
-	users, err := h.usecase.GetUsers()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+type LoginRequest struct {
+	Email string `json:"email"`
+	Code  string `json:"code"`
+}
+
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Requisição inválida", http.StatusBadRequest)
 		return
 	}
-	if users == nil {
-		users = make([]domain.User, 0) // prevents returning null in JSON
+
+	user, err := h.usecase.Login(req.Email, req.Code)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(user)
 }

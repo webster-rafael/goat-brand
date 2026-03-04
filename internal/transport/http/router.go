@@ -32,8 +32,8 @@ func NewRouter(userHandler *UserHandler) http.Handler {
 		w.Write([]byte("O backend da GoatBrand está rodando!"))
 	})
 
-	// Route to fetch users
-	r.Get("/users", userHandler.FindAll)
+	// Login
+	r.Post("/login", userHandler.Login)
 
 	return r
 }
